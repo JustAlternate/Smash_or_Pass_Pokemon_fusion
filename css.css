@@ -12,6 +12,17 @@ div {
     border:10px;
     border-color:lightblue;
 }
+
+.parents_imgs{
+    display:inline-block;
+}
+
+parents {
+    grid-column:2;
+    width:50%;
+    text-align:center;
+}
+
 .fusion_name{
     text-align:center;
     grid-column: 2;

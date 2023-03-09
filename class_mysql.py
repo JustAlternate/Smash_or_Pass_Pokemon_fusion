@@ -10,8 +10,9 @@ def connexion():
     return connexion_mysql
 
 class mySqlAccount():
-    def __init__(self):
+    def __init__(self, bdd):
         self.req = ""
+        self.bdd_name = bdd
 
     def commit(self):
         connexion_mysql = connexion()
@@ -29,11 +30,15 @@ class mySqlAccount():
         return res
 
     def loadlisteAccount(self):
-        self.req = "SELECT Fusion FROM fusion_scores;"
+        self.req = "SELECT Fusion FROM "+self.bdd_name+";"
         self.listAccounts = self.fetch()
 
+    def load_less_viewed_Fusions(self):
+        self.req = "SELECT Fusion, (nbr_times_smashed + nbr_times_passed) AS nbr_total FROM "+self.bdd_name+" ORDER BY nbr_total ASC"
+        return self.fetch()
+
     def find_leaderboard(self):
-        self.req = "SELECT Fusion,nbr_times_smashed,nbr_times_passed,timestamp FROM fusion_scores ORDER BY nbr_times_smashed DESC, timestamp ASC;"
+        self.req = "SELECT Fusion,nbr_times_smashed,nbr_times_passed,timestamp FROM "+self.bdd_name+" ORDER BY nbr_times_smashed DESC, timestamp ASC;"
         return self.fetch()
 
     def isindatabase(self, fusion_name):
@@ -45,12 +50,25 @@ class mySqlAccount():
 
     def maj_account(self, fusion, smashed, passed):
         if not self.isindatabase(fusion):
-            self.req = "INSERT INTO fusion_scores VALUES ('" + str(fusion) + "','" + str(smashed) + "','" + str(passed) + "',CURRENT_TIMESTAMP());"
+            self.req = "INSERT INTO "+self.bdd_name+" VALUES ('" + str(fusion) + "','" + str(smashed) + "','" + str(passed) + "',CURRENT_TIMESTAMP());"
             self.commit()
         else:
             if smashed:
-                self.req = "UPDATE fusion_scores SET nbr_times_smashed = nbr_times_smashed + 1, timestamp = CURRENT_TIMESTAMP() WHERE Fusion = '" + str(fusion) + "';"
-            else:
-                self.req = "UPDATE fusion_scores SET nbr_times_passed = nbr_times_passed + 1, timestamp = CURRENT_TIMESTAMP() WHERE Fusion = '" + str(fusion) + "';"
-            self.commit()
+                self.req = "UPDATE "+self.bdd_name+" SET nbr_times_smashed = nbr_times_smashed + 1, timestamp = CURRENT_TIMESTAMP() WHERE Fusion = '" + str(fusion) + "';"
+                self.commit()
+            if passed:
+                self.req = "UPDATE "+self.bdd_name+" SET nbr_times_passed = nbr_times_passed + 1, timestamp = CURRENT_TIMESTAMP() WHERE Fusion = '" + str(fusion) + "';"
+                self.commit()
+
+    def update_account(self, fusion, smashed, passed):
+        try:
+            if smashed:
+                self.req = "UPDATE "+self.bdd_name+" SET nbr_times_smashed = nbr_times_smashed + 1, timestamp = CURRENT_TIMESTAMP() WHERE Fusion = '" + str(fusion) + "';"
+                self.commit()
+            if passed:
+                self.req = "UPDATE "+self.bdd_name+" SET nbr_times_passed = nbr_times_passed + 1, timestamp = CURRENT_TIMESTAMP() WHERE Fusion = '" + str(fusion) + "';"
+                self.commit()
+        except:
+            pass
+
 
