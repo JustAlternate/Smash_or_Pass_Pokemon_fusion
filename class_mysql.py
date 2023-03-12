@@ -33,12 +33,16 @@ class mySqlAccount():
         self.req = "SELECT Fusion FROM "+self.bdd_name+";"
         self.listAccounts = self.fetch()
 
+    def load_all_less_viewed_Fusions(self):
+        self.req = "SELECT Fusion FROM "+self.bdd_name+" WHERE (nbr_times_smashed + nbr_times_passed) = (SELECT MIN(nbr_times_smashed + nbr_times_passed) FROM "+self.bdd_name+");"
+        return self.fetch()
+
     def load_less_viewed_Fusions(self):
-        self.req = "SELECT Fusion, (nbr_times_smashed + nbr_times_passed) AS nbr_total FROM "+self.bdd_name+" ORDER BY nbr_total ASC"
+        self.req = "SELECT Fusion, (nbr_times_smashed + nbr_times_passed) AS nbr_total FROM "+self.bdd_name+" ORDER BY nbr_total ASC;"
         return self.fetch()
 
     def find_leaderboard(self):
-        self.req = "SELECT Fusion,nbr_times_smashed,nbr_times_passed,timestamp FROM "+self.bdd_name+" ORDER BY nbr_times_smashed DESC, timestamp ASC;"
+        self.req = "SELECT Fusion FROM "+self.bdd_name+" WHERE nbr_times_smashed >= (SELECT MAX(nbr_times_smashed)-2 FROM "+self.bdd_name+") ORDER BY nbr_times_smashed DESC, timestamp ASC;"
         return self.fetch()
 
     def isindatabase(self, fusion_name):

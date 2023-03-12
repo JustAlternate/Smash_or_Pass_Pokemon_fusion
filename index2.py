@@ -6,13 +6,15 @@ cgitb.enable()
 
 from random import randint, choice
 import os
-import pypokedex
 import mysql.connector
 from class_mysql import *
 
 
 # Get last form data
 donnees = cgi.FieldStorage()
+
+
+
 # Get if last form was pass of smash
 if (donnees.getvalue('Smash2') is None):
     smash2 = 0
@@ -34,6 +36,12 @@ last_fusion2 = donnees.getvalue('last_fusion2')
 sql = mySqlAccount("fusion_scores2")
 
 leaderboard = sql.find_leaderboard()
+quantity_leaderboard = donnees.getvalue("quantity_leaderboard")
+if quantity_leaderboard is None:
+    quantity_leaderboard = 1
+else:
+    quantity_leaderboard = int(quantity_leaderboard)
+
 if last_fusion1 is not None:
     sql.update_account(str(last_fusion1), smash1, passed1)
 
@@ -42,7 +50,7 @@ if last_fusion2 is not None:
 
 
 number_of_fused_poke = 0
-list_of_fused_poke = sql.load_less_viewed_Fusions()
+list_of_fused_poke = sql.load_all_less_viewed_Fusions()
 
 """
 path = "/var/www/html/cgi-enabled/Smash_or_Pass_Pokemon_fusion/indexed/"
@@ -57,11 +65,8 @@ number_of_fused_poke = len(list_of_fused_poke)
 random_fuse_poke = choice(list_of_fused_poke)
 """
 
-index1 = randint(0, 800)
-index2 = randint(0, 800)
-random_fuse_poke1 = list_of_fused_poke[index1][0]
-list_of_fused_poke.pop(index1)
-random_fuse_poke2 = list_of_fused_poke[index2][0]
+random_fuse_poke1 = choice(list_of_fused_poke)[0]
+random_fuse_poke2 = choice(list_of_fused_poke)[0]
 
 defuse1 = random_fuse_poke1.split('.')
 first1 = defuse1[0]
@@ -80,10 +85,6 @@ for i in range(25):
 
 print ("Content-Type: text/html")
 print ("")
-
-
-for i in range(1,40):
-    print("""<img src="indexed/{}">""".format(str(leaderboard[i][0].split('.')[0])+"/"+leaderboard[i][0]))
 
 
 print("""
@@ -107,7 +108,14 @@ print("""
           <button type="submit" id="Smash1" name="Smash1" value="0"> Smash </button>
       </buttons>
       </div>
-""".format(str(first1),str(second1),"indexed/"+first1+"/"+random_fuse_poke1, random_fuse_poke1))
+""".format(str(first1),str(second1),"indexed/"+first1+"/"+random_fuse_poke1, random_fuse_poke1,quantity_leaderboard))
+
+print("""
+      <div style="grid-column:3/4;text-align:center;margin-top:100%;">
+      <form action="index2.py" method="post">
+      <button type="submit">RELOAD</button>
+      </form>
+      </div>""")
 
 print("""
       <div class="poke2">
@@ -122,7 +130,24 @@ print("""
       </buttons>
       </div>
       </div>
-""".format(str(first2),str(second2),"indexed/"+first2+"/"+random_fuse_poke2, random_fuse_poke2))
+""".format(str(first2),str(second2),"indexed/"+first2+"/"+random_fuse_poke2, random_fuse_poke2, quantity_leaderboard))
+
+print("""Leaderboard : </br>
+<form action="index2.py" method="post">
+  <label for="quantity">Number of fusion to show in the leaderboard (between 1 and 500):</label>
+  <input type="number" id="quantity_leaderboard" name="quantity_leaderboard" min="1" max="1000">
+  <input type="submit" value="Submit">
+</form>
+</br>
+""")
+
+taille_leaderboard = len(leaderboard)
+if quantity_leaderboard > taille_leaderboard:
+    quantity_leaderboard = taille_leaderboard
+
+for i in range(0, quantity_leaderboard):
+    print("""<img src="indexed/{}">""".format(str(leaderboard[i][0].split('.')[0])+"/"+leaderboard[i][0]))
+
 print("""
       </body>
       </html>

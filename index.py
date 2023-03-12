@@ -6,7 +6,6 @@ cgitb.enable()
 
 from random import randint, choice
 import os
-import pypokedex
 import mysql.connector
 from class_mysql import *
 
@@ -24,15 +23,14 @@ else:
 # Get what fusion mons was last fusion.
 last_fusion = donnees.getvalue('last_fusion')
 
-sql = mySqlAccount("fusion_scores")
+sql = mySqlAccount("fusion_scores2")
 
 leaderboard = sql.find_leaderboard()
 if last_fusion is not None:
     sql.update_account(str(last_fusion), smash, passed)
 
 
-number_of_fused_poke = 0
-list_of_fused_poke = sql.load_less_viewed_Fusions()
+list_of_fused_poke = sql.load_all_less_viewed_Fusions()
 
 """
 path = "/var/www/html/cgi-enabled/Smash_or_Pass_Pokemon_fusion/indexed/"
@@ -41,14 +39,13 @@ for dir in dir_list:
     path2 = path+dir
     dir_list2 = os.listdir(path2)
     for image in dir_list2:
+        sql.maj_account(str(image), 0, 0)
         list_of_fused_poke.append(image)
-
 number_of_fused_poke = len(list_of_fused_poke)
 random_fuse_poke = choice(list_of_fused_poke)
 """
 
-random_fuse_poke = list_of_fused_poke[randint(0,500)][0]
-
+random_fuse_poke = choice(list_of_fused_poke)[0]
 defuse = random_fuse_poke.split('.')
 first = defuse[0]
 second = defuse[1]
@@ -58,9 +55,6 @@ for i in range(25):
 
 print ("Content-Type: text/html")
 print ("")
-
-for i in range(1,20):
-    print("""<img src="indexed/{}">""".format(str(leaderboard[i][0].split('.')[0])+"/"+leaderboard[i][0]))
 
 print("""
 <html>
@@ -83,7 +77,12 @@ print("""
           <button type="submit" id="Smash" name="Smash" value="0"> Smash </button>
       </buttons>
       </div>
+      <p> Leaderboard </p>
 """.format(str(first),str(second),"indexed/"+first+"/"+random_fuse_poke, random_fuse_poke))
+for i in range(1,1):
+    print("""
+          <img src="indexed/{}">""".format(str(leaderboard[i][0].split('.')[0])+"/"+leaderboard[i][0]))
+
 print("""
       </body>
       </html>
